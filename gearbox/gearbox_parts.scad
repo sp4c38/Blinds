@@ -207,42 +207,10 @@ module carrier_base(planet_number_gears=3, base_height=10, planet_gear_center_of
 	}
 }
 
-module carrier_gear_cone(planet_gear_number=3, planet_gear_center_offset=19, thick_bar_diameter=7, base_diameter=4, base_height=6, cone_height=3) {
-	nc = planet_gear_number;
-	l1 = planet_gear_center_offset;
-	r = thick_bar_diameter/2;
-
-	alpha = 360/nc;
-	p0 = [l1, 0];
-	p1 = [cos(alpha)*l1, sin(alpha)*l1];
-	m = (p0[1]-p1[1])/(p0[0]-p1[0]);
-	a = p0[1]-m*p0[0];
-	m2 = -(1/m);
-	a2 = p1[1]-m2*p1[0];
-	q = sqrt(1+m2^2);
-	delta_x = r/q;
-	delta_y = m2*delta_x;
-	p3 = [p1[0]+delta_x, p1[1]+delta_y];
-	a3 = p3[1]-m*p3[0];
-	y4 = 0;
-	x4 = (-a3)/m;
-	p4 = [x4, y4];
-	l3 = p4[0];
-	l2 = sqrt(2*l3^2-(2*l3^2*cos(alpha)));
-	h = sqrt(l3^2-(l2/2)^2);
-	
-	color("orange")
-	rotate_extrude()
-		polygon([[base_diameter/2, 0], [h, 0], [base_diameter/2, cone_height]]);
-}
-
 module carrier_gear(show_gear=true, modul=2, number_teeth=10, gear_height=10, helix_angle=20, base_diameter=4, base_height=6, planet_gear_number=3, planet_gear_center_offset=19, thick_bar_diameter=7) {
 	// Base
 	cylinder(d=base_diameter, h=base_height);
-	
-	// Cone was discarded. See GoodNotes document for explanation.
-	// carrier_gear_cone(planet_gear_number=planet_gear_number, planet_gear_center_offset=planet_gear_center_offset, thick_bar_diameter=thick_bar_diameter, base_diameter=base_diameter, base_height=base_height, cone_height=cone_height);
-	
+
 	// Gear
 	if (show_gear) {
 		translate([0, 0, base_height])
