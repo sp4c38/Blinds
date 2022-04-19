@@ -1,29 +1,31 @@
 $fa = 1;
-$fs = 1;
+$fs = 3;
 
 // VIEW MODIFIERS
 ground_all = false;
 
 show_motor = false;
 show_motor_mount = false;
-	show_motor_mount_spacer = false;
-show_motor_gear = false;
+	show_motor_mount_spacer = true;
+show_motor_gear = true;
 
-show_planet_gears = false;
-show_carrier = false;
-	show_carrier_gear = false;
+show_planet_gears = true;
+show_carrier = true;
+	show_carrier_gear = true;
 
 show_ring_gear_case = false;
-	show_ring_gear_case_spacer = false;
+	show_ring_gear_case_spacer = true;
 	show_ring_gear_case_cover = true;
-show_ring_gear = false;
+show_ring_gear = true;
 
 // GENERAL VARIABLES
-number_stages = 1;
+number_stages = 3;
+
+Z_TOLERANCE = 0.3;
 
 // MOTOR VARIABLES
 MOTOR_DIAMETER = 42;
-MOTOR_BEARING_HEIGHT = 4.5;
+MOTOR_BEARING_HEIGHT = 4.6;
 MOTOR_BAR_HEIGHT = 16; // Measured without the small part of the bar covered by the surrounding metal circle.
 
 // MOTOR GEAR VARIABLES
@@ -92,10 +94,10 @@ TOP_COVER_HEIGHT = CARRIER_THICK_BAR_HEIGHT+CARRIER_BASE_HEIGHT+TOP_COVER_CARRIE
 
 // MOTOR MOUNT VARIABLES
 MOTOR_MOUNT_MOTOR_DIAMETER = MOTOR_DIAMETER+2*0.15;
-MOTOR_MOUNT_CASE_OVERLAP = 2;
+MOTOR_MOUNT_CASE_OVERLAP = 1.5;
 MOTOR_MOUNT_DIAMETER = RING_GEAR_CASE_DIAMETER;
-MOTOR_MOUNT_CASE_PLATE_HEIGHT= 3;
-MOTOR_MOUNT_CONNECTOR_PLATE_HEIGHT = 2;
+MOTOR_MOUNT_CASE_PLATE_HEIGHT= 1.5;
+MOTOR_MOUNT_CONNECTOR_PLATE_HEIGHT = MOTOR_MOUNT_CASE_PLATE_HEIGHT;
 
 // CROSS DEPENDENCY VARIABLES
 MOTOR_GEAR_START_HEIGHT = MOTOR_BEARING_HEIGHT-MOTOR_MOUNT_CASE_PLATE_HEIGHT+MOTOR_BAR_HEIGHT-MOTOR_GEAR_HOLE_HEIGHT;

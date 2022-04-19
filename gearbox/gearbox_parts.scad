@@ -97,10 +97,10 @@ module motor_gear(base_diameter=MOTOR_GEAR_BASE_DIAMETER, base_height=MOTOR_GEAR
 		union() {
 			cylinder(h=base_height, d=base_diameter);
 
-			// color("lightblue") {
-			// 	translate([0, 0, base_height-0.001])
-			// 		pfeilrad(modul=gear_module, zahnzahl=number_teeth, breite=gear_height, bohrung=0, eingriffswinkel=20, schraegungswinkel=gear_helix_angle, optimiert=false);
-			// }	
+			color("lightblue") {
+				translate([0, 0, base_height-0.001])
+					pfeilrad(modul=gear_module, zahnzahl=number_teeth, breite=gear_height, bohrung=0, eingriffswinkel=20, schraegungswinkel=gear_helix_angle, optimiert=false);
+			}	
 		}
 		
 		translate([0, 0, -0.1])
@@ -282,7 +282,7 @@ module cover(diameter=RING_GEAR_CASE_DIAMETER, inner_diameter=RING_GEAR_CASE_COV
 module bolt_slot(length=30, empty=false, with_head=true, thread_diameter=BOLT_THREAD_DIAMETER, head_length=BOLT_HEAD_LENGTH, head_diameter=BOLT_HEAD_DIAMETER, wall_width=BOLT_WALL_WIDTH) {
 	total_diameter = head_diameter+2*wall_width;
 	
-	color(with_head ? "purple" : "lightblue")
+	// color(with_head ? "purple" : "lightblue")
 	translate([total_diameter/2, 0, 0])
 	difference() {
 		cylinder(d=total_diameter+(!empty ? 0.01 : 0), h=length);
