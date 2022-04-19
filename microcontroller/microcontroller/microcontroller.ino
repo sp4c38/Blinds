@@ -39,22 +39,22 @@ void toggleBlinds() {
     delay(200);
     digitalWrite(MOTOR_ON_OFF_RELAIS_PIN, HIGH);
     
-    delay(5000);
-
-    digitalWrite(MOTOR_ON_OFF_RELAIS_PIN, LOW);
-    delay(200);
-    digitalWrite(MOTOR_DIRECTION_RELAIS_1_PIN, LOW);
-    digitalWrite(MOTOR_DIRECTION_RELAIS_2_PIN, LOW);
-    delay(1000);
-    digitalWrite(MOTOR_ON_OFF_RELAIS_PIN, HIGH);
-    
-    delay(5000);
-    
-    digitalWrite(LED_BUILTIN, HIGH);
-    digitalWrite(MOTOR_ON_OFF_RELAIS_PIN, LOW);
-    delay(200);
-    digitalWrite(MOTOR_DIRECTION_RELAIS_1_PIN, LOW);
-    digitalWrite(MOTOR_DIRECTION_RELAIS_2_PIN, LOW);
+//    delay(5000);
+//
+//    digitalWrite(MOTOR_ON_OFF_RELAIS_PIN, LOW);
+//    delay(200);
+//    digitalWrite(MOTOR_DIRECTION_RELAIS_1_PIN, LOW);
+//    digitalWrite(MOTOR_DIRECTION_RELAIS_2_PIN, LOW);
+//    delay(1000);
+//    digitalWrite(MOTOR_ON_OFF_RELAIS_PIN, HIGH);
+//    
+//    delay(5000);
+//    
+//    digitalWrite(LED_BUILTIN, HIGH);
+//    digitalWrite(MOTOR_ON_OFF_RELAIS_PIN, LOW);
+//    delay(200);
+//    digitalWrite(MOTOR_DIRECTION_RELAIS_1_PIN, LOW);
+//    digitalWrite(MOTOR_DIRECTION_RELAIS_2_PIN, LOW);
 }
 
 void loop() {

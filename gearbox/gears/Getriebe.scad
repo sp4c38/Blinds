@@ -179,6 +179,10 @@ module stirnrad(modul, zahnzahl, breite, bohrung, eingriffswinkel = 20, schraegu
 	optimiert = (optimiert && r >= breite*1.5 && d > 2*bohrung);	// ist Optimierung sinnvoll?
 
 	// Zeichnung
+	
+	// translate([0, 0, 7])
+		// cylinder(h=5,d=da);
+	
 	union(){
 		rotate([0,0,-phi_r-90*(1-spiel)/zahnzahl]){						// Zahn auf x-Achse zentrieren;
 																		// macht Ausrichtung mit anderen Rädern einfacher
@@ -336,8 +340,10 @@ module zahnstange_und_rad (modul, laenge_stange, zahnzahl_rad, hoehe_stange, boh
 	randbreite = Breite des Randes ab Fußkreis
     bohrung = Durchmesser der Mittelbohrung
     eingriffswinkel = Eingriffswinkel, Standardwert = 20° gemäß DIN 867. Sollte nicht größer als 45° sein.
-    schraegungswinkel = Schrägungswinkel zur Rotationsachse, Standardwert = 0° (Geradverzahnung) */
-module hohlrad(modul, zahnzahl, breite, randbreite, eingriffswinkel = 20, schraegungswinkel = 0) {
+    schraegungswinkel = Schrägungswinkel zur Rotationsachse, Standardwert = 0° (Geradverzahnung) 
+	anzahl_auslassungen = Anzahl der Auslassungen der Randbreite
+*/
+module hohlrad(modul, zahnzahl, breite, randbreite, eingriffswinkel = 10, schraegungswinkel = 0, anzahl_auslassungen = 0) {
 
 	// Dimensions-Berechnungen	
 	ha = (zahnzahl >= 20) ? 0.02 * atan((zahnzahl/15)/pi) : 0.6;	// Verkürzungsfaktor Zahnkopfhöhe
@@ -360,6 +366,32 @@ module hohlrad(modul, zahnzahl, breite, randbreite, eingriffswinkel = 20, schrae
 	schritt = rho_ra/16;											// Evolvente wird in 16 Stücke geteilt
 	tau = 360/zahnzahl;												// Teilungswinkel
 
+	zahnbreite = (180*(1+spiel))/zahnzahl+2*phi_r;
+
+	// for references see GoodNotes entry in 2022 folder for the Blinds project and the spur_gear_extended python script.
+	l1 = randbreite + 1;
+	
+	p1 = pol_zu_kart(ev(rb, floor(rho_ra/schritt)*schritt));
+	p2 = pol_zu_kart([ev(rb, rho_ra)[0], zahnbreite-ev(rb, rho_ra)[1]]);
+	
+	m = (p2[1]-p1[1]) / (p2[0]-p1[0]);
+	m2 = -(m^(-1));
+
+	g1 = function (x) m2 * x + (p2[1] - m2 * p2[0]);
+	g2 = function (x) m2 * x + (p1[1] - m2 * p1[0]);
+	
+	v = sqrt(m2 ^ 2 + 1);
+	
+	xl1 = l1 / v;
+	
+	x3 = p2[0] + xl1;
+	y3 = g1(x3);
+	p3 = [x3, y3];
+	
+	x4 = p1[0] + xl1;
+	y4 = g2(x4);
+	p4 = [x4, y4];
+	
 	// Zeichnung
 	rotate([0,0,-phi_r-90*(1+spiel)/zahnzahl])						// Zahn auf x-Achse zentrieren;
 																	// macht Ausrichtung mit anderen Rädern einfacher
@@ -367,30 +399,34 @@ module hohlrad(modul, zahnzahl, breite, randbreite, eingriffswinkel = 20, schrae
 		difference(){
 			circle(r = ra + randbreite);							// Außenkreis
 			union(){
-				zahnbreite = (180*(1+spiel))/zahnzahl+2*phi_r;
+				max = pol_zu_kart(ev(rb, floor(rho_ra/schritt)*schritt));
 				circle(rf);											// Fußkreis	
 				for (rot = [0:tau:360]){
 					rotate (rot) {									// "Zahnzahl-mal" kopieren und drehen
-						polygon( concat(
+						erste_haelfte_points = concat(
 							[[0,0]],
 							[for (rho = [0:schritt:rho_ra])			// von null Grad (Grundkreis)
 																	// bis maximaler Evolventenwinkel (Kopfkreis)
 								pol_zu_kart(ev(rb,rho))],
-							[pol_zu_kart(ev(rb,rho_ra))],
-							[for (rho = [rho_ra:-schritt:0])		// von maximaler Evolventenwinkel (Kopfkreis)
-																	// bis null Grad (Grundkreis)
-								pol_zu_kart([ev(rb,rho)[0], zahnbreite-ev(rb,rho)[1]])]
-																	// (180*(1+spiel)) statt 180,
-																	// um Spiel an den Flanken zu erlauben
-							)
+							[pol_zu_kart(ev(rb,rho_ra))]
 						);
+						
+						hat_auslassung = (rot / tau) < anzahl_auslassungen ? true : false;
+						auslassung_points = [p4, p3];
+						
+						zweite_haelfte_points = [for (rho = [rho_ra:-schritt:0])		// von maximaler Evolventenwinkel (Kopfkreis)
+																						// bis null Grad (Grundkreis)
+						pol_zu_kart([ev(rb,rho)[0], zahnbreite-ev(rb,rho)[1]])];		// (180*(1+spiel)) statt 180,
+																						// um Spiel an den Flanken zu erlauben
+						
+						polygon(concat(erste_haelfte_points, hat_auslassung ? auslassung_points : [], zweite_haelfte_points));
 					}
 				}
 			}
 		}
 	}
 
-	echo("Außendurchmesser Hohlrad = ", 2*(ra + randbreite));
+	// echo("Außendurchmesser Hohlrad = ", 2*(ra + randbreite));
 	
 }
 
@@ -401,14 +437,14 @@ module hohlrad(modul, zahnzahl, breite, randbreite, eingriffswinkel = 20, schrae
     bohrung = Durchmesser der Mittelbohrung
     eingriffswinkel = Eingriffswinkel, Standardwert = 20° gemäß DIN 867. Sollte nicht größer als 45° sein.
     schraegungswinkel = Schrägungswinkel zur Rotationsachse, Standardwert = 0° (Geradverzahnung) */
-module pfeilhohlrad(modul, zahnzahl, breite, randbreite, eingriffswinkel = 20, schraegungswinkel = 0) {
+module pfeilhohlrad(modul, zahnzahl, breite, randbreite, eingriffswinkel = 20, schraegungswinkel = 0, anzahl_auslassungen = 0) {
 
 	breite = breite / 2;
 	translate([0,0,breite])
 		union(){
-		hohlrad(modul, zahnzahl, breite, randbreite, eingriffswinkel, schraegungswinkel);		// untere Hälfte
+		hohlrad(modul, zahnzahl, breite, randbreite, eingriffswinkel, schraegungswinkel, anzahl_auslassungen);		// untere Hälfte
 		mirror([0,0,1])
-			hohlrad(modul, zahnzahl, breite, randbreite, eingriffswinkel, schraegungswinkel);	// obere Hälfte
+			hohlrad(modul, zahnzahl, breite, randbreite, eingriffswinkel, schraegungswinkel, anzahl_auslassungen);	// obere Hälfte
 	}
 }
 

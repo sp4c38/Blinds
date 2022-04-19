@@ -37,11 +37,11 @@ module bar_holder(width=10, height=20, depth_before=10, depth_after=20, bar_diam
 	
 	mirror([0, 0, 1])
 	translate([0, bar_diameter/2+depth_after, height/2])
-		bar_screwboard(width=width, height=screwboard_height, depth=screwboard_depth, number_holes=screwboard_number_holes, top_diameter=screwboard_top_diameter, bottom_diameter=screwboard_bottom_diameter, 	diameter_change_depth=screwboard_diameter_change_depth);
+		bar_screwboard(width=width, height=screwboard_height, depth=screwboard_depth, number_holes=screwboard_number_holes, top_diameter=screwboard_top_diameter, bottom_diameter=screwboard_bottom_diameter, diameter_change_depth=screwboard_diameter_change_depth);
 }
 
 $fa = 1;
 $fs = 1;
 
-bar_holder(width=40, height=45, depth_before=8, depth_after=28.5, bar_diameter=30, screwboard_number_holes=2, screwboard_height=20, screwboard_depth=10, screwboard_top_diameter=10, screwboard_bottom_diameter=5, screwboard_diameter_change_depth=3.4);
+bar_holder(width=40, height=45, depth_before=8, depth_after=28.5, bar_diameter=30, screwboard_number_holes=2, screwboard_height=20, screwboard_depth=10, screwboard_top_diameter=10, screwboard_bottom_diameter=5   , screwboard_diameter_change_depth=3.4);
 // bar_screwboard(width=40, height=20, depth=10, number_holes=2, top_diameter=10, bottom_diameter=4.8, diameter_change_depth=3.4);
