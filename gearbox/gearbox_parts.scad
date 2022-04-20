@@ -55,11 +55,11 @@ module motor_mount_connector_plate(diameter=65.3, motor_case_diameter=47, height
 			}
 			
 			// Cone-like surrounding
-			translate([0, 0, height])
-			rotate_extrude() {
-				translate([(motor_case_diameter-0.01)/2, 0, 0])
-					polygon([[0, 0], [plate_width, 0], [0, case_cover_height-(height-case_plate_height)]]);
-			}
+			// translate([0, 0, height])
+			// rotate_extrude() {
+			// 	translate([(motor_case_diameter-0.01)/2, 0, 0])
+			// 		polygon([[0, 0], [plate_width, 0], [0, case_cover_height-(height-case_plate_height)]]);
+			// }
 		}
 	}
 }
@@ -79,12 +79,14 @@ module motor_mount(motor_diameter=MOTOR_MOUNT_MOTOR_DIAMETER, motor_overlap=MOTO
 }
 
 // SPACER
-module spacer(diameter=80, inner_diameter=60, height=3) {
+module spacer(diameter=80, inner_diameter=60, height=3, with_tolerance=true) {
+	real_height = with_tolerance ? height-Z_TOLERANCE : height;
+	
 	color("lightgreen") {
 		difference() {
-			cylinder(d=diameter, h=height);
+			cylinder(d=diameter, h=real_height);
 			translate([0, 0, -0.01])
-				cylinder(d=inner_diameter, h=height+0.02);
+				cylinder(d=inner_diameter, h=real_height+0.02);
 		}
 	}
 }
@@ -158,41 +160,53 @@ module ring_gear(modul=1, number_teeth=57, height=10, border_width=5, helix_angl
 	ring_gear_case_mounts(diameter_ring_gear=da, amount=mount_amount, diameter=mount_diameter, height=height);
 }
 
+// RING GEAR CASE
 /* Parameters prefixed with r_ should match the appropriate parameters parsed to the ring_gear module. 
 */
 module ring_gear_case(stage_no=0, diameter=RING_GEAR_CASE_DIAMETER, ring_gear_inner_diameter=RING_GEAR_DIAMETER, spacing=RING_GEAR_CASE_SPACING, cover_diameter=RING_GEAR_CASE_COVER_INNER_DIAMETER, r_mount_diameter=RING_GEAR_MOUNT_DIAMETER, r_mount_amount=RING_GEAR_MOUNT_AMOUNT, r_height=RING_GEAR_HEIGHT) {
-	is_last_stage = stage_no == number_stages-1;
-	total_inner_diameter = ring_gear_inner_diameter + 2*spacing;
 	
+	is_last_stage = stage_no == number_stages-1;
+	
+	total_inner_diameter = ring_gear_inner_diameter+2*spacing;
+	real_height = r_height+Z_TOLERANCE;
 	bolt_length = r_height+(is_last_stage ? TOP_COVER_HEIGHT : RING_GEAR_CASE_SPACER_HEIGHT);
+	echo(bolt_length);
+	
 	bolt_slots(length=bolt_length, stage_no=stage_no) {
 		difference() {
-			cylinder(d=diameter, h=r_height);
+			cylinder(d=diameter, h=real_height);
 		
 			translate([0, 0, -0.01]) {
-				cylinder(d=total_inner_diameter, h=r_height+0.02);
-				ring_gear_case_mounts(diameter_ring_gear=ring_gear_inner_diameter, amount=r_mount_amount, diameter=r_mount_diameter+2*spacing, height=r_height+0.02);
+				cylinder(d=total_inner_diameter, h=real_height+0.02);
+				
+				ring_gear_case_mounts(diameter_ring_gear=ring_gear_inner_diameter, amount=r_mount_amount, diameter=r_mount_diameter+2*spacing, height=real_height+0.02);
 			}
 		}
-	
-		translate([0, 0, -0.01])
-			children(0);
+		
+		translate([0, 0, real_height-0.01])
+		union() {
+			if (is_last_stage && show_ring_gear_case_cover) {
+				cover(height=TOP_COVER_HEIGHT-Z_TOLERANCE);
+			} else if (!is_last_stage && show_ring_gear_case_spacer) {
+				spacer(diameter=diameter, inner_diameter=cover_diameter, height=RING_GEAR_CASE_SPACER_HEIGHT-Z_TOLERANCE);
+			}
+		}
 	}
 }
 
 // CARRIER
-module carrier_base(planet_number_gears=3, base_height=10, planet_gear_center_offset=20, thin_bar_height=10, thick_bar_height=5, thin_bar_diameter=5,  thick_bar_diameter=10, show_thick_bar=true) {
+module carrier_base(planet_number_gears=PLANET_NUMBER_GEARS, base_height=CARRIER_BASE_HEIGHT, planet_gear_center_offset=PLANET_CENTER_OFFSET, thin_bar_height=PLANET_GEAR_HEIGHT, thick_bar_height=CARRIER_THICK_BAR_HEIGHT, thin_bar_diameter=CARRIER_THIN_BAR_DIAMETER,  thick_bar_diameter=CARRIER_THICK_BAR_DIAMETER, show_thick_bar=true) {
 	rotation_angles = planet_gears_rotation_angles(planet_number_gears);
 	
 	// Bars
 	for (a=rotation_angles) {
 		rotate([0, 0, a])
 		translate([planet_gear_center_offset, 0, 0]) {
-			cylinder(d=thin_bar_diameter, h=show_thick_bar ? thin_bar_height : thin_bar_height+thick_bar_height);
+			cylinder(d=thin_bar_diameter, h=(show_thick_bar ? thin_bar_height+Z_TOLERANCE : thin_bar_height+thick_bar_height)+0.01);
 			
 			if (show_thick_bar) {
-				translate([0, 0, thin_bar_height])
-					cylinder(d=thick_bar_diameter, h=thick_bar_height);
+				translate([0, 0, thin_bar_height+Z_TOLERANCE])
+					cylinder(d=thick_bar_diameter, h=thick_bar_height-Z_TOLERANCE+0.01);
 			}
 		}
 	}
@@ -207,7 +221,7 @@ module carrier_base(planet_number_gears=3, base_height=10, planet_gear_center_of
 	}
 }
 
-module carrier_gear(show_gear=true, modul=2, number_teeth=10, gear_height=10, helix_angle=20, base_diameter=4, base_height=6, planet_gear_number=3, planet_gear_center_offset=19, thick_bar_diameter=7) {
+module carrier_gear(show_gear=true, modul=2, number_teeth=10, gear_height=10, helix_angle=20, base_diameter=4, base_height=6) {
 	// Base
 	cylinder(d=base_diameter, h=base_height);
 
@@ -219,15 +233,15 @@ module carrier_gear(show_gear=true, modul=2, number_teeth=10, gear_height=10, he
 }
 
 module carrier(
-	planet_number_gears=3, base_height=10, planet_gear_center_offset=20, bar_height=10, thin_bar_height=10, thick_bar_height=5, thin_bar_diameter=5, thick_bar_diameter=10, show_thick_bar=false, // Carrier parameters
+	base_height=CARRIER_BASE_HEIGHT, thin_bar_height=PLANET_GEAR_HEIGHT, thick_bar_height=CARRIER_THICK_BAR_HEIGHT,  show_thick_bar=false, // Carrier parameters
 	
-	show_gear=true, gear_module=2, gear_number_teeth=10, gear_height=10, gear_helix_angle=20, gear_base_diameter=4, gear_base_height=10 // Gear parameters
+	show_gear=true, gear_module=CARRIER_GEAR_MODULE, gear_number_teeth=CARRIER_GEAR_TEETH_NUMBER, gear_height=MOTOR_GEAR_HEIGHT, gear_helix_angle=MOTOR_GEAR_HELIX_ANGLE, gear_base_diameter=CARRIER_GEAR_BASE_DIAMETER, gear_base_height=CARRIER_GEAR_BASE_HEIGHT // Gear parameters
 ) {
-	carrier_base(planet_number_gears=planet_number_gears, base_height=base_height, planet_gear_center_offset=planet_gear_center_offset, thin_bar_height=thin_bar_height,  thick_bar_height=thick_bar_height, thin_bar_diameter=thin_bar_diameter, thick_bar_diameter=thick_bar_diameter, show_thick_bar=show_thick_bar);
+	carrier_base(base_height=CARRIER_BASE_HEIGHT, thin_bar_height=PLANET_GEAR_HEIGHT, thick_bar_height=CARRIER_THICK_BAR_HEIGHT, show_thick_bar=show_thick_bar);
 	
 	gear_start_height = thin_bar_height+thick_bar_height+base_height;
 	translate([0, 0, gear_start_height-0.001])
-		carrier_gear(show_gear=show_gear, modul=gear_module, number_teeth=gear_number_teeth, gear_height=gear_height, helix_angle=gear_helix_angle, base_diameter=gear_base_diameter, base_height=gear_base_height, planet_gear_number=planet_number_gears, planet_gear_center_offset=planet_gear_center_offset, thick_bar_diameter=thick_bar_diameter);
+		carrier_gear(show_gear=show_gear, modul=gear_module, number_teeth=gear_number_teeth, gear_height=gear_height, helix_angle=gear_helix_angle, base_diameter=gear_base_diameter, base_height=gear_base_height);
 }
 
 // COVER
@@ -289,7 +303,7 @@ module bolt_slots(length=30, stage_no=0, no=BOLT_NUMBER, offset=BOLT_OFFSET, wit
 		for (i=[0:number_slots-1]) {
 			rotate([0, 0, i*angle])
 			translate([offset, 0, 0])
-				bolt_slot(length=length, with_head=with_head_connectors ? (i%2 == 0 ? true : false) : false);
+				bolt_slot(length=length-Z_TOLERANCE, with_head=with_head_connectors ? (i%2 == 0 ? true : false) : false);
 		}
 	}
 }
