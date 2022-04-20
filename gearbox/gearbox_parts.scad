@@ -53,13 +53,6 @@ module motor_mount_connector_plate(diameter=65.3, motor_case_diameter=47, height
 				translate([0, 0, -0.1])
 					cylinder(d=motor_case_diameter, h=height+0.2);
 			}
-			
-			// Cone-like surrounding
-			// translate([0, 0, height])
-			// rotate_extrude() {
-			// 	translate([(motor_case_diameter-0.01)/2, 0, 0])
-			// 		polygon([[0, 0], [plate_width, 0], [0, case_cover_height-(height-case_plate_height)]]);
-			// }
 		}
 	}
 }
