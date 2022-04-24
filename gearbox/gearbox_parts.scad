@@ -57,8 +57,12 @@ module motor_mount_connector_plate(diameter=65.3, motor_case_diameter=47, height
 	}
 }
 
-module motor_mount(motor_diameter=MOTOR_MOUNT_MOTOR_DIAMETER, motor_overlap=MOTOR_MOUNT_CASE_OVERLAP, case_plate_height=MOTOR_MOUNT_CASE_PLATE_HEIGHT, case_cover_height=30, motor_bearing_diameter=17.5, diameter=MOTOR_MOUNT_DIAMETER, connector_plate_height=MOTOR_MOUNT_CONNECTOR_PLATE_HEIGHT, case_screw_hole_offset=14.5, case_screw_hole_diameter=4) {
-	bolt_slots(length=MOTOR_SPACER_HEIGHT, stage_no=1, with_head_connectors=false) {
+module motor_mount(show_spacer=true, motor_diameter=MOTOR_MOUNT_MOTOR_DIAMETER, motor_overlap=MOTOR_MOUNT_CASE_OVERLAP, case_plate_height=MOTOR_MOUNT_CASE_PLATE_HEIGHT, case_cover_height=30, motor_bearing_diameter=17.5, diameter=MOTOR_MOUNT_DIAMETER, connector_plate_height=MOTOR_MOUNT_CONNECTOR_PLATE_HEIGHT, case_screw_hole_offset=14.5, case_screw_hole_diameter=4, spacer_height=MOTOR_SPACER_HEIGHT) {
+	
+	total_height = connector_plate_height+spacer_height;
+	slot_length = get_bolt_length(total_height);
+
+	bolt_slots(total_height=total_height, length=slot_length, z_offset=spacer_height-slot_length, stage_no=1, with_head_connectors=false) {
 		rotate([180]) {
 			motor_mount_case(motor_diameter=motor_diameter, motor_overlap=motor_overlap, plate_height=case_plate_height, cover_height=case_cover_height, bearing_diameter=motor_bearing_diameter, screw_hole_offset=case_screw_hole_offset, screw_hole_diameter=case_screw_hole_diameter);
 			
@@ -66,20 +70,20 @@ module motor_mount(motor_diameter=MOTOR_MOUNT_MOTOR_DIAMETER, motor_overlap=MOTO
 			motor_mount_connector_plate(diameter=diameter, motor_case_diameter=motor_case_diameter, height=connector_plate_height, case_cover_height=case_cover_height, case_plate_height=case_plate_height);
 		}
 		
-		translate([0, 0, -0.01])
-			children(0);
+		if (show_spacer) {
+			translate([0, 0, -0.01])
+				spacer(diameter=RING_GEAR_CASE_DIAMETER, inner_diameter=RING_GEAR_CASE_INNER_DIAMETER+2*XY_TOLERANCE, height=spacer_height-Z_TOLERANCE);
+		}		
 	}
 }
 
 // SPACER
-module spacer(diameter=80, inner_diameter=60, height=3, with_tolerance=true) {
-	real_height = with_tolerance ? height-Z_TOLERANCE : height;
-	
+module spacer(diameter=80, inner_diameter=60, height=3) {
 	color("lightgreen") {
 		difference() {
-			cylinder(d=diameter, h=real_height);
+			cylinder(d=diameter, h=height);
 			translate([0, 0, -0.01])
-				cylinder(d=inner_diameter, h=real_height+0.02);
+				cylinder(d=inner_diameter, h=height+0.02);
 		}
 	}
 }
@@ -124,6 +128,7 @@ module planet_gears(modul=2, number_teeth=8, center_offset=20, height=10, hole_d
 	for (a=rotation_angles) {
 		rotate([0, 0, a])
 		translate([center_offset, 0, 0])
+		rotate([0, 0, -16.3])
 			planet_gear(modul=modul, number_teeth=number_teeth, height=height, hole_diameter=hole_diameter, helix_angle=helix_angle);
 	}
 }
@@ -156,32 +161,32 @@ module ring_gear(modul=1, number_teeth=57, height=10, border_width=5, helix_angl
 // RING GEAR CASE
 /* Parameters prefixed with r_ should match the appropriate parameters parsed to the ring_gear module. 
 */
-module ring_gear_case(stage_no=0, diameter=RING_GEAR_CASE_DIAMETER, ring_gear_inner_diameter=RING_GEAR_DIAMETER, spacing=RING_GEAR_CASE_SPACING, cover_diameter=RING_GEAR_CASE_COVER_INNER_DIAMETER, r_mount_diameter=RING_GEAR_MOUNT_DIAMETER, r_mount_amount=RING_GEAR_MOUNT_AMOUNT, r_height=RING_GEAR_HEIGHT) {
+module ring_gear_case(stage_no=0, diameter=RING_GEAR_CASE_DIAMETER, inner_diameter=RING_GEAR_CASE_INNER_DIAMETER, spacing=RING_GEAR_CASE_SPACING, r_mount_diameter=RING_GEAR_MOUNT_DIAMETER, r_mount_amount=RING_GEAR_MOUNT_AMOUNT, r_diameter=RING_GEAR_DIAMETER, r_height=RING_GEAR_HEIGHT) {
 	
 	is_last_stage = stage_no == number_stages-1;
 	
-	total_inner_diameter = ring_gear_inner_diameter+2*spacing;
-	real_height = r_height+Z_TOLERANCE;
-	bolt_length = r_height+(is_last_stage ? TOP_COVER_HEIGHT : RING_GEAR_CASE_SPACER_HEIGHT);
-	echo(bolt_length);
+	real_ring_gear_height = r_height+Z_TOLERANCE;
 	
-	bolt_slots(length=bolt_length, stage_no=stage_no) {
+	total_height = r_height+(is_last_stage ? TOP_COVER_HEIGHT : RING_GEAR_CASE_SPACER_HEIGHT);
+	slot_length = get_bolt_length(total_height);
+	
+	bolt_slots(total_height=total_height, length=slot_length, z_offset=total_height-slot_length, stage_no=stage_no) {
 		difference() {
-			cylinder(d=diameter, h=real_height);
+			cylinder(d=diameter, h=real_ring_gear_height);
 		
 			translate([0, 0, -0.01]) {
-				cylinder(d=total_inner_diameter, h=real_height+0.02);
+				cylinder(d=inner_diameter, h=real_ring_gear_height+0.02);
 				
-				ring_gear_case_mounts(diameter_ring_gear=ring_gear_inner_diameter, amount=r_mount_amount, diameter=r_mount_diameter+2*spacing, height=real_height+0.02);
+				ring_gear_case_mounts(diameter_ring_gear=r_diameter, amount=r_mount_amount, diameter=r_mount_diameter+2*spacing, height=real_ring_gear_height+0.02);
 			}
 		}
 		
-		translate([0, 0, real_height-0.01])
+		translate([0, 0, real_ring_gear_height-0.01])
 		union() {
 			if (is_last_stage && show_ring_gear_case_cover) {
 				cover(height=TOP_COVER_HEIGHT-Z_TOLERANCE);
 			} else if (!is_last_stage && show_ring_gear_case_spacer) {
-				spacer(diameter=diameter, inner_diameter=cover_diameter, height=RING_GEAR_CASE_SPACER_HEIGHT-Z_TOLERANCE);
+				spacer(diameter=diameter, inner_diameter=inner_diameter+2*XY_TOLERANCE, height=RING_GEAR_CASE_SPACER_HEIGHT-Z_TOLERANCE-Z_TOLERANCE);
 			}
 		}
 	}
@@ -238,7 +243,7 @@ module carrier(
 }
 
 // COVER
-module cover(diameter=RING_GEAR_CASE_DIAMETER, inner_diameter=RING_GEAR_CASE_COVER_INNER_DIAMETER, height=TOP_COVER_HEIGHT, plate_height=TOP_COVER_PLATE_HEIGHT, hole_diameter=RING_GEAR_CASE_HOLE_DIAMETER) {
+module cover(diameter=RING_GEAR_CASE_DIAMETER, inner_diameter=RING_GEAR_CASE_INNER_DIAMETER, height=TOP_COVER_HEIGHT, plate_height=TOP_COVER_PLATE_HEIGHT, hole_diameter=RING_GEAR_CASE_HOLE_DIAMETER) {
 	difference() {
 		color("orange") {
 			cylinder(d=diameter, h=height);
@@ -254,13 +259,13 @@ module cover(diameter=RING_GEAR_CASE_DIAMETER, inner_diameter=RING_GEAR_CASE_COV
 }
 
 // BOLTS
-module bolt_slot(length=30, empty=false, with_head=true, thread_diameter=BOLT_THREAD_DIAMETER, head_length=BOLT_HEAD_LENGTH, head_diameter=BOLT_HEAD_DIAMETER, wall_width=BOLT_WALL_WIDTH) {
+module bolt_slot(length=10, total_height=30, empty=false, with_head=true, thread_diameter=BOLT_THREAD_DIAMETER, head_length=BOLT_HEAD_LENGTH, head_diameter=BOLT_HEAD_DIAMETER, wall_width=BOLT_WALL_WIDTH) {
 	total_diameter = head_diameter+2*wall_width;
 	
 	// color(with_head ? "purple" : "lightblue")
 	translate([total_diameter/2, 0, 0])
 	difference() {
-		cylinder(d=total_diameter+(!empty ? 0.01 : 0), h=length);
+		cylinder(d=total_diameter+(empty ? 0 : 0.01), h=length);
 	
 		if (!empty) {
 			translate([0, 0, -0.1])
@@ -272,9 +277,14 @@ module bolt_slot(length=30, empty=false, with_head=true, thread_diameter=BOLT_TH
 			}
 		}
 	}
+
+	if (empty) {
+		translate([total_diameter/2, 0, -(total_height-length)-0.01])
+			cylinder(d=thread_diameter, h=total_height-length+0.02);
+	}
 }
 
-module bolt_slots(length=30, stage_no=0, no=BOLT_NUMBER, offset=BOLT_OFFSET, with_head_connectors=true) {
+module bolt_slots(total_height=30, length=10, stage_no=0, no=BOLT_NUMBER, offset=BOLT_OFFSET, z_offset=0, with_head_connectors=true) {
 	angle = with_head_connectors ? 360/(2*no) : 360/no;
 	number_slots = with_head_connectors ? 2*no : no;
 	
@@ -285,8 +295,8 @@ module bolt_slots(length=30, stage_no=0, no=BOLT_NUMBER, offset=BOLT_OFFSET, wit
 		union() {
 			for (i=[0:number_slots-1]) {
 				rotate([0, 0, i*angle])
-				translate([offset, 0, 0])
-					bolt_slot(length=length, empty=true);
+				translate([offset, 0, z_offset])
+					bolt_slot(length=length, total_height=total_height, empty=true);
 			}
 		}
 	}
@@ -295,7 +305,7 @@ module bolt_slots(length=30, stage_no=0, no=BOLT_NUMBER, offset=BOLT_OFFSET, wit
 	union() {	
 		for (i=[0:number_slots-1]) {
 			rotate([0, 0, i*angle])
-			translate([offset, 0, 0])
+			translate([offset, 0, z_offset])
 				bolt_slot(length=length-Z_TOLERANCE, with_head=with_head_connectors ? (i%2 == 0 ? true : false) : false);
 		}
 	}

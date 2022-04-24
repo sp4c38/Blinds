@@ -12,11 +12,7 @@ if (show_motor) {
 }
 
 if (show_motor_mount) {
-	motor_mount(case_cover_height=10, motor_bearing_diameter=17.5+2*0.5, case_screw_hole_offset=14.5, case_screw_hole_diameter=3.90+2*0.4) {
-		if (show_motor_mount_spacer) {
-			spacer(diameter=RING_GEAR_CASE_DIAMETER, inner_diameter=RING_GEAR_CASE_COVER_INNER_DIAMETER, height=MOTOR_SPACER_HEIGHT);
-		}
-	};
+	motor_mount(show_spacer=show_motor_mount_spacer, case_cover_height=10, motor_bearing_diameter=17.5+2*0.5, case_screw_hole_offset=14.5, case_screw_hole_diameter=3.90+2*0.4);
 }
 
 difference() {
@@ -40,6 +36,7 @@ difference() {
 				}
 				
 				if (show_ring_gear) {
+					rotate([0, 0, -5.2])
 					ring_gear(modul=RING_GEAR_MODULE, number_teeth=RING_GEAR_TEETH, height=RING_GEAR_HEIGHT, border_width=RING_GEAR_BORDER_WIDTH, helix_angle=RING_GEAR_HELIX_ANGLE, mount_diameter=RING_GEAR_MOUNT_DIAMETER, mount_amount=RING_GEAR_MOUNT_AMOUNT);
 				}
 				
