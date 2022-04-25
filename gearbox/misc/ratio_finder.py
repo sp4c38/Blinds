@@ -14,7 +14,7 @@ Eventually, you can select the ratio which fits best to your desired ratio and u
 
 from decimal import *
 
-sun_teeth = Decimal("10")
+sun_teeth = Decimal("9")
 ring_teeth_possibilities = [Decimal(x) for x in range(1, 100+1)]
 
 for ring_teeth in ring_teeth_possibilities:

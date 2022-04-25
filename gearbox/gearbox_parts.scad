@@ -119,7 +119,7 @@ module planet_gear(modul=2, number_teeth=10, height=5, hole_diameter=5, helix_an
 }
 
 function planet_gear_teeth(sun_gear_teeth, ring_gear_teeth) = ring_gear_teeth/2-sun_gear_teeth/2;
-function planet_gears_center_offset(motor_gear_teeth, motor_gear_module, ring_gear_teeth, ring_gear_module) = ((motor_gear_teeth*motor_gear_module)/2)+(((ring_gear_teeth*ring_gear_module)-(motor_gear_teeth*motor_gear_module))/4);
+
 function planet_gears_rotation_angles(number_gears) = [for (i=[1:number_gears]) (360/number_gears)*i];
 
 module planet_gears(modul=2, number_teeth=8, center_offset=20, height=10, hole_diameter=5, helix_angle=-20, number_gears=3) {
