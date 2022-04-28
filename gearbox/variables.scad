@@ -1,5 +1,5 @@
 $fa = 1;
-$fs = 1;
+$fs = 0.1;
 
 // VIEW MODIFIERS
 ground_all = false;
@@ -7,16 +7,16 @@ ground_all = false;
 show_motor = false;
 show_motor_mount = false;
 	show_motor_mount_spacer = true;
-show_motor_gear = true;
+show_motor_gear = false;
 
 show_planet_gears = true;
-show_carrier = true;
+show_carrier = false;
 	show_carrier_gear = true;
 
 show_ring_gear_case = false;
 	show_ring_gear_case_spacer = true;
 	show_ring_gear_case_cover = true;
-show_ring_gear = true;
+show_ring_gear = false;
 
 // GENERAL VARIABLES
 number_stages = 1;
@@ -64,7 +64,7 @@ d_p = PLANET_GEAR_MODULE * PLANET_GEAR_TEETH;
 c_p =  (PLANET_GEAR_TEETH < 3)? 0 : PLANET_GEAR_MODULE / 6;
 PLANET_GEAR_BASE_DIAMETER = d_p - 2 * (PLANET_GEAR_MODULE + c_p);;
 PLANET_GEAR_HOLE_DIAMETER = PLANET_GEAR_BASE_DIAMETER-2*1.5;
-PLANET_CENTER_OFFSET = (MOTOR_GEAR_MODULE*MOTOR_GEAR_TEETH)/2+(PLANET_GEAR_MODULE*PLANET_GEAR_TEETH)/2+PLANET_GEAR_TOOTH_TOLERANCE;
+PLANET_CENTER_OFFSET = 14;//(MOTOR_GEAR_MODULE*MOTOR_GEAR_TEETH)/2+(PLANET_GEAR_MODULE*PLANET_GEAR_TEETH)/2+PLANET_GEAR_TOOTH_TOLERANCE;
 echo("Planet gear base diameter: ", PLANET_GEAR_BASE_DIAMETER);
 
 // GEAR CARRIER VARIABLES
