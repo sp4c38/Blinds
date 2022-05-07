@@ -128,7 +128,6 @@ module planet_gears(modul=2, number_teeth=8, center_offset=20, height=10, hole_d
 	for (a=rotation_angles) {
 		rotate([0, 0, a])
 		translate([center_offset, 0, 0])
-		rotate([0, 0, -16.3])
 			planet_gear(modul=modul, number_teeth=number_teeth, height=height, hole_diameter=hole_diameter, helix_angle=helix_angle);
 	}
 }
@@ -200,9 +199,11 @@ module carrier_base(planet_number_gears=PLANET_NUMBER_GEARS, base_height=CARRIER
 	for (a=rotation_angles) {
 		rotate([0, 0, a])
 		translate([planet_gear_center_offset, 0, 0]) {
+			color("blue")
 			cylinder(d=thin_bar_diameter, h=(show_thick_bar ? thin_bar_height+Z_TOLERANCE : thin_bar_height+thick_bar_height)+0.01);
 			
 			if (show_thick_bar) {
+				color("red")
 				translate([0, 0, thin_bar_height+Z_TOLERANCE])
 					cylinder(d=thick_bar_diameter, h=thick_bar_height-Z_TOLERANCE+0.01);
 			}

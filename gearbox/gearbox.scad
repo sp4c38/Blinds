@@ -36,7 +36,6 @@ difference() {
 				}
 				
 				if (show_ring_gear) {
-					rotate([0, 0, -5.2])
 					ring_gear(modul=RING_GEAR_MODULE, number_teeth=RING_GEAR_TEETH, height=RING_GEAR_HEIGHT, border_width=RING_GEAR_BORDER_WIDTH, helix_angle=RING_GEAR_HELIX_ANGLE, mount_diameter=RING_GEAR_MOUNT_DIAMETER, mount_amount=RING_GEAR_MOUNT_AMOUNT);
 				}
 				
