@@ -128,6 +128,7 @@ module planet_gears(modul=2, number_teeth=8, center_offset=20, height=10, hole_d
 	for (a=rotation_angles) {
 		rotate([0, 0, a])
 		translate([center_offset, 0, 0])
+		rotate([0, 0, -11])
 			planet_gear(modul=modul, number_teeth=number_teeth, height=height, hole_diameter=hole_diameter, helix_angle=helix_angle);
 	}
 }
@@ -166,8 +167,8 @@ module ring_gear_case(stage_no=0, diameter=RING_GEAR_CASE_DIAMETER, inner_diamet
 	
 	real_ring_gear_height = r_height+Z_TOLERANCE;
 	
-	total_height = r_height+(is_last_stage ? TOP_COVER_HEIGHT : RING_GEAR_CASE_SPACER_HEIGHT);
-	slot_length = get_bolt_length(total_height);
+	total_height = r_height+Z_TOLERANCE+0.01;//+(is_last_stage ? TOP_COVER_HEIGHT : RING_GEAR_CASE_SPACER_HEIGHT);
+	slot_length = total_height;//get_bolt_length(total_height);
 	
 	bolt_slots(total_height=total_height, length=slot_length, z_offset=total_height-slot_length, stage_no=stage_no) {
 		difference() {
@@ -302,12 +303,13 @@ module bolt_slots(total_height=30, length=10, stage_no=0, no=BOLT_NUMBER, offset
 		}
 	}
 	
+	real_bolt_length = (stage_no == number_stages-1) ? length : length-Z_TOLERANCE;
 	rotate([0, 0, stage_no%2 == 1 ? angle : 0])
 	union() {	
 		for (i=[0:number_slots-1]) {
 			rotate([0, 0, i*angle])
 			translate([offset, 0, z_offset])
-				bolt_slot(length=length-Z_TOLERANCE, with_head=with_head_connectors ? (i%2 == 0 ? true : false) : false);
+				bolt_slot(length=real_bolt_length, with_head=with_head_connectors ? (i%2 == 0 ? true : false) : false);
 		}
 	}
 }
