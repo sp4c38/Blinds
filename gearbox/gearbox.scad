@@ -12,6 +12,7 @@ if (show_motor) {
 }
 
 if (show_motor_mount) {
+	rotate([0, 0, 9.5])
 	motor_mount(show_spacer=show_motor_mount_spacer, case_cover_height=10, motor_bearing_diameter=17.5+2*0.5, case_screw_hole_offset=14.5, case_screw_hole_diameter=3.90+2*0.4);
 }
 
@@ -47,11 +48,11 @@ difference() {
 				}
 				
 				if (show_carrier) {
-					carrier(show_thick_bar=true, // Carrier parameters
-						show_gear=show_carrier_gear // Gear parameters
-					);
+					carrier(is_last_stage=is_last_stage);
 				}
 			}
 		}
 	}
 }
+
+// bar_connector();

@@ -1,9 +1,9 @@
 $fa = 1;
-$fs = 3;
+$fs = 0.1;
 
 // VIEW MODIFIERS
-ground_all = false;
-3d_printing_optimized = true;
+ground_all = true;
+3d_printing_optimized = false;
 
 show_motor = false;
 show_motor_mount = false;
@@ -11,12 +11,11 @@ show_motor_mount = false;
 show_motor_gear = false;
 
 show_planet_gears = false;
-show_carrier = false;
-	show_carrier_gear = true;
+show_carrier = true;
 
-show_ring_gear_case = true;
+show_ring_gear_case = false;
 	show_ring_gear_case_spacer = true;
-	show_ring_gear_case_cover = false;
+	show_ring_gear_case_cover = true;
 show_ring_gear = false;
 
 // GENERAL VARIABLES
