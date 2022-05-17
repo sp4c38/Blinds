@@ -193,16 +193,25 @@ module ring_gear_case(stage_no=0, diameter=RING_GEAR_CASE_DIAMETER, inner_diamet
 }
 
 // CARRIER & BAR CONNECTOR
-module bar_connector(covered_height=17, bar_diameter=28.8+2*0.2, wall_width=2, carrier_base_height=CARRIER_BASE_HEIGHT, screw_hole_diameter=5) {
+module bar_connector(bottom_height=18, top_height=7, open_screw_diameter=6.7, close_screw_diameter=4.5+2*0.2, bar_diameter=28.3+2*0.4, wall_width=1.5, carrier_base_height=CARRIER_BASE_HEIGHT) {
+	// Open screw diameter must be bigger than close screw diameter.
+	
 	total_diameter = bar_diameter+2*wall_width;
+	covered_height=bottom_height+open_screw_diameter+top_height;
 	difference() {
 		cylinder(d=total_diameter, h=carrier_base_height+covered_height);
 		translate([0, 0, carrier_base_height])
 			cylinder(d=bar_diameter, h=covered_height+0.01);	
-	
-		translate([0, 0, carrier_base_height+covered_height/2])
-		rotate([0, 90, 0])
-			cylinder(d=screw_hole_diameter, h=total_diameter+2*0.01, center=true);
+		
+		translate([0, 0, carrier_base_height+bottom_height+open_screw_diameter/2])
+		union() {
+			rotate([0, 90, 0])
+				cylinder(d=open_screw_diameter, h=bar_diameter/2+wall_width+0.01, center=false);
+			
+			translate([-wall_width-bar_diameter/2-0.01, 0, 0])
+			rotate([0, 90, 0])
+				cylinder(d=close_screw_diameter, h=bar_diameter/2+wall_width+0.01, center=false);
+		}
 	}
 }
 

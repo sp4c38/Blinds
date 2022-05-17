@@ -54,5 +54,3 @@ difference() {
 		}
 	}
 }
-
-// bar_connector();
