@@ -54,3 +54,7 @@ difference() {
 		}
 	}
 }
+
+// use <../Gearbox Holder/gearbox_holder.scad>
+// translate([0, 0, -MOTOR_MOUNT_CASE_PLATE_HEIGHT])
+// 	gearbox_holder();

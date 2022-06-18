@@ -1,47 +1,78 @@
-module bar_screwboard(width=40, height=15, depth=2, number_holes=2, top_diameter=10, bottom_diameter=4.8, diameter_change_depth=3.4) {
+include <../Gearbox Holder/gearbox_holder.scad>
+
+$fa = 1;
+$fs = 0.1;
+
+// BHOLDER: Bar holder
+
+BHOLDER_BAR_DIAMETER = 28.8+2*0.5;
+
+is_middle_piece = false; // False means it is the end piece. Screw shape must be modified manually.
+
+// -> End
+BHOLDER_END_INCLUDE = is_middle_piece ? false : true;
+BHOLDER_END_WIDTH = 3;
+
+// -> Shell
+BHOLDER_SHELL_WIDTH = (is_middle_piece ? 25 : 23)+(BHOLDER_END_INCLUDE ? BHOLDER_END_WIDTH : 0);
+BHOLDER_SHELL_WALL_WIDTH = 4; // Only applies for left, top and bottom walls.
+BHOLDER_SHELL_SPACING_WALL = HOLDER_BOLT_SHELL_OUTER_DIAMETER/2; // The length from the center of the bar to the wall.
+BHOLDER_SHELL_DEPTH = BHOLDER_BAR_DIAMETER+2*BHOLDER_SHELL_WALL_WIDTH;
+
+// -> Screwboard
+// Slimmer variant
+// BHOLDER_SCREWBOARD_PASSAGE_DIAMETER = 7.9+2*0.3;
+// BHOLDER_SCREWBOARD_TIGHT_DIAMETER = 3.9+2*0.1;
+// BHOLDER_SCREWBOARD_PASSAGE_HEIGHT = 2.5+0.4;
+
+// Wider variant
+BHOLDER_SCREWBOARD_PASSAGE_DIAMETER = 8.9+2*0.4;
+BHOLDER_SCREWBOARD_TIGHT_DIAMETER = 4.5+2*0.1;
+BHOLDER_SCREWBOARD_PASSAGE_HEIGHT = 3.4+0.4;
+
+BHOLDER_SCREWBOARD_TIGHT_HEIGHT = 10;
+BHOLDER_SCREWBOARD_HEIGHT = BHOLDER_SCREWBOARD_PASSAGE_HEIGHT+BHOLDER_SCREWBOARD_TIGHT_HEIGHT;
+BHOLDER_SCREWBOARD_DEPTH = BHOLDER_SCREWBOARD_PASSAGE_DIAMETER+2*2;
+
+echo("Bar holder screwboard depth ", BHOLDER_SCREWBOARD_DEPTH);
+
+module bar_screwboard() {
 	color("lightblue") {
-		top_radius = top_diameter / 2;
-		bottom_radius = bottom_diameter / 2;
-		
-		translate([-width/2, 0, 0])
-		rotate([90, 0, 0])
-		difference() {
-			cube([width, height, depth], center=false);
-			
-			x = (width-number_holes*2*top_radius) / (number_holes+1); // spacing between edge and screw hole and between two screw holes
-			for (i=[1:number_holes]) {
-				translate([(i*x+(2*i-1)*top_radius), height/2, 0]) {
-					translate([0, 0, depth-diameter_change_depth])
-					cylinder(r1=bottom_radius, r2=top_radius, h=diameter_change_depth, center=false);
+		for(i=[0:1]) {
+			translate([0, 0, (i == 0 ? BHOLDER_SHELL_DEPTH-0.01 : -BHOLDER_SCREWBOARD_DEPTH+0.01)]) {
+				difference() {
+					cube([BHOLDER_SHELL_WIDTH, BHOLDER_SCREWBOARD_HEIGHT, BHOLDER_SCREWBOARD_DEPTH], center=false);
 					
-					cylinder(r=bottom_radius, h=depth-diameter_change_depth, center=false);
+					translate([BHOLDER_SHELL_WIDTH/2, 0, BHOLDER_SCREWBOARD_DEPTH/2]) {
+						translate([0, BHOLDER_SCREWBOARD_HEIGHT-BHOLDER_SCREWBOARD_PASSAGE_HEIGHT, 0])
+						rotate([-90, 0, 0])
+							cylinder(d=BHOLDER_SCREWBOARD_PASSAGE_DIAMETER, h=BHOLDER_SCREWBOARD_PASSAGE_HEIGHT+0.01);
+							
+						translate([0, BHOLDER_SCREWBOARD_HEIGHT-BHOLDER_SCREWBOARD_PASSAGE_HEIGHT-BHOLDER_SCREWBOARD_TIGHT_HEIGHT-0.01, 0])
+						rotate([-90, 0, 0])
+							cylinder(d=BHOLDER_SCREWBOARD_TIGHT_DIAMETER, h=BHOLDER_SCREWBOARD_TIGHT_HEIGHT+0.02);
+					}
 				}
 			}
 		}
 	}
 }
 
-module bar_holder(width=10, height=20, depth_before=10, depth_after=20, bar_diameter=10, screwboard_number_holes=2, screwboard_height=10, screwboard_depth=5, screwboard_top_diameter=10, screwboard_bottom_diameter=4.8, screwboard_diameter_change_depth=3.4) {	
-	depth_sum = depth_before+bar_diameter+depth_after;
-	
+module bar_shell() {	
 	difference() {
-		translate([0, depth_sum/2-(depth_before+bar_diameter/2), 0])
-			cube([width, depth_before+bar_diameter+depth_after, height], center=true);
+		translate([0, 0, 0])
+			cube([BHOLDER_SHELL_WIDTH, BHOLDER_SHELL_SPACING_WALL+BHOLDER_BAR_DIAMETER/2+BHOLDER_SHELL_WALL_WIDTH, BHOLDER_SHELL_DEPTH]);
 		
+		translate([-0.01, BHOLDER_SHELL_SPACING_WALL, BHOLDER_SHELL_WALL_WIDTH+BHOLDER_BAR_DIAMETER/2])
 		rotate([0, 90, 0])
-			cylinder(d=bar_diameter, h=width, center=true);
-	}
-	
-	translate([0, bar_diameter/2+depth_after, height/2])
-		bar_screwboard(width=width, height=screwboard_height, depth=screwboard_depth, number_holes=screwboard_number_holes, top_diameter=screwboard_top_diameter, bottom_diameter=screwboard_bottom_diameter, diameter_change_depth=screwboard_diameter_change_depth);		
-	
-	mirror([0, 0, 1])
-	translate([0, bar_diameter/2+depth_after, height/2])
-		bar_screwboard(width=width, height=screwboard_height, depth=screwboard_depth, number_holes=screwboard_number_holes, top_diameter=screwboard_top_diameter, bottom_diameter=screwboard_bottom_diameter, diameter_change_depth=screwboard_diameter_change_depth);
+			cylinder(d=BHOLDER_BAR_DIAMETER, h=(BHOLDER_END_INCLUDE ? BHOLDER_SHELL_WIDTH-BHOLDER_END_WIDTH+0.01 : BHOLDER_SHELL_WIDTH+0.02), center=false);
+	}	
 }
 
-$fa = 1;
-$fs = 1;
+module bar_holder() {
+	bar_shell();
+	
+	bar_screwboard();
+}
 
-bar_holder(width=40, height=45, depth_before=8, depth_after=28.5, bar_diameter=30, screwboard_number_holes=2, screwboard_height=20, screwboard_depth=10, screwboard_top_diameter=10, screwboard_bottom_diameter=5   , screwboard_diameter_change_depth=3.4);
-// bar_screwboard(width=40, height=20, depth=10, number_holes=2, top_diameter=10, bottom_diameter=4.8, diameter_change_depth=3.4);
+bar_holder();

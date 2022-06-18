@@ -59,10 +59,10 @@ module motor_mount_connector_plate(diameter=65.3, motor_case_diameter=47, height
 
 module motor_mount(show_spacer=true, motor_diameter=MOTOR_MOUNT_MOTOR_DIAMETER, motor_overlap=MOTOR_MOUNT_CASE_OVERLAP, case_plate_height=MOTOR_MOUNT_CASE_PLATE_HEIGHT, case_cover_height=30, motor_bearing_diameter=17.5, diameter=MOTOR_MOUNT_DIAMETER, connector_plate_height=MOTOR_MOUNT_CONNECTOR_PLATE_HEIGHT, case_screw_hole_offset=14.5, case_screw_hole_diameter=4, spacer_height=MOTOR_SPACER_HEIGHT) {
 	
-	total_height = connector_plate_height+spacer_height;
+	total_height = connector_plate_height+spacer_height-Z_TOLERANCE;
 	slot_length = get_bolt_length(total_height);
 
-	bolt_slots(total_height=total_height, length=slot_length, z_offset=spacer_height-slot_length, stage_no=-1, with_head_connectors=false) {
+	bolt_slots(total_height=total_height, length=slot_length, z_offset=spacer_height-Z_TOLERANCE-slot_length, stage_no=-1, with_head_connectors=false) {
 		rotate([180]) {
 			motor_mount_case(motor_diameter=motor_diameter, motor_overlap=motor_overlap, plate_height=case_plate_height, cover_height=case_cover_height, bearing_diameter=motor_bearing_diameter, screw_hole_offset=case_screw_hole_offset, screw_hole_diameter=case_screw_hole_diameter);
 			
@@ -167,7 +167,7 @@ module ring_gear_case(stage_no=0, diameter=RING_GEAR_CASE_DIAMETER, inner_diamet
 	
 	real_ring_gear_height = r_height+Z_TOLERANCE;
 	
-	total_height = r_height+(is_last_stage ? TOP_COVER_HEIGHT : RING_GEAR_CASE_SPACER_HEIGHT);
+	total_height = r_height+(is_last_stage ? TOP_COVER_HEIGHT : RING_GEAR_CASE_SPACER_HEIGHT-Z_TOLERANCE);
 	slot_length = get_bolt_length(total_height);
 	
 	bolt_slots(total_height=total_height, length=slot_length, z_offset=total_height-slot_length, stage_no=stage_no) {
@@ -184,7 +184,7 @@ module ring_gear_case(stage_no=0, diameter=RING_GEAR_CASE_DIAMETER, inner_diamet
 		translate([0, 0, real_ring_gear_height-0.01])
 		union() {
 			if (is_last_stage && show_ring_gear_case_cover) {
-				cover(height=TOP_COVER_HEIGHT-Z_TOLERANCE);
+				cover(height=TOP_COVER_HEIGHT-Z_TOLERANCE, plate_height=TOP_COVER_PLATE_HEIGHT);
 			} else if (!is_last_stage && show_ring_gear_case_spacer) {
 				spacer(diameter=diameter, inner_diameter=inner_diameter, height=RING_GEAR_CASE_SPACER_HEIGHT-Z_TOLERANCE-Z_TOLERANCE);
 			}
@@ -193,17 +193,17 @@ module ring_gear_case(stage_no=0, diameter=RING_GEAR_CASE_DIAMETER, inner_diamet
 }
 
 // CARRIER & BAR CONNECTOR
-module bar_connector(bottom_height=18, top_height=7, open_screw_diameter=6.7, close_screw_diameter=4.5+2*0.2, bar_diameter=28.3+2*0.4, wall_width=1.5, carrier_base_height=CARRIER_BASE_HEIGHT) {
-	// Open screw diameter must be bigger than close screw diameter.
+module bar_connector(bottom_covered_height=18, top_covered_height=7, open_screw_diameter=4.5+2*0.2, close_screw_diameter=4.5+2*0.2, bar_diameter=BAR_CONNECTOR_BAR_DIAMETER, wall_width=BAR_CONNECTOR_WALL_WIDTH, carrier_base_height=CARRIER_BASE_HEIGHT) {
+	// Open screw diameter must be bigger or equal close screw diameter.
 	
 	total_diameter = bar_diameter+2*wall_width;
-	covered_height=bottom_height+open_screw_diameter+top_height;
+	covered_height=bottom_covered_height+open_screw_diameter+top_covered_height;
 	difference() {
 		cylinder(d=total_diameter, h=carrier_base_height+covered_height);
 		translate([0, 0, carrier_base_height])
 			cylinder(d=bar_diameter, h=covered_height+0.01);	
 		
-		translate([0, 0, carrier_base_height+bottom_height+open_screw_diameter/2])
+		translate([0, 0, carrier_base_height+bottom_covered_height+open_screw_diameter/2])
 		union() {
 			rotate([0, 90, 0])
 				cylinder(d=open_screw_diameter, h=bar_diameter/2+wall_width+0.01, center=false);
@@ -270,7 +270,7 @@ module carrier(
 }
 
 // COVER
-module cover(diameter=RING_GEAR_CASE_DIAMETER, inner_diameter=RING_GEAR_CASE_INNER_DIAMETER, height=TOP_COVER_HEIGHT, plate_height=TOP_COVER_PLATE_HEIGHT, hole_diameter=RING_GEAR_CASE_HOLE_DIAMETER) {
+module cover(diameter=RING_GEAR_CASE_DIAMETER, inner_diameter=RING_GEAR_CASE_INNER_DIAMETER, height=TOP_COVER_HEIGHT, plate_height=TOP_COVER_PLATE_HEIGHT, hole_diameter=TOP_COVER_HOLE_DIAMETER) {
 	difference() {
 		color("orange") {
 			cylinder(d=diameter, h=height);
@@ -289,18 +289,17 @@ module cover(diameter=RING_GEAR_CASE_DIAMETER, inner_diameter=RING_GEAR_CASE_INN
 module bolt_slot(length=10, total_height=30, empty=false, with_head=true, thread_diameter=BOLT_THREAD_DIAMETER, head_length=BOLT_HEAD_LENGTH, head_diameter=BOLT_HEAD_DIAMETER, wall_width=BOLT_WALL_WIDTH) {
 	total_diameter = head_diameter+2*wall_width;
 	
-	// color(with_head ? "purple" : "lightblue")
 	translate([total_diameter/2, 0, 0])
 	difference() {
 		cylinder(d=total_diameter+(empty ? 0 : 0.01), h=length);
 	
 		if (!empty) {
-			translate([0, 0, -0.1])
-				cylinder(d=thread_diameter, h=length+0.2);
+			translate([0, 0, -0.01])
+				cylinder(d=thread_diameter, h=length+0.02);
 		
 			if (with_head) {
 				translate([0, 0, length-head_length])
-					cylinder(d=head_diameter, h=head_length+0.1);
+					cylinder(d=head_diameter, h=head_length+0.01);
 			}
 		}
 	}
@@ -328,13 +327,12 @@ module bolt_slots(total_height=30, length=10, stage_no=0, no=BOLT_NUMBER, offset
 		}
 	}
 	
-	real_bolt_length = (stage_no == number_stages-1) ? length : length-Z_TOLERANCE;
 	rotate([0, 0, stage_no%2 == 1 ? angle : 0])
 	union() {	
 		for (i=[0:number_slots-1]) {
 			rotate([0, 0, i*angle])
 			translate([offset, 0, z_offset])
-				bolt_slot(length=real_bolt_length, with_head=with_head_connectors ? (i%2 == 0 ? true : false) : false);
+				bolt_slot(length=length, with_head=with_head_connectors ? (i%2 == 0 ? true : false) : false);
 		}
 	}
 }
