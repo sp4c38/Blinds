@@ -57,7 +57,7 @@ void onCoverCommand(HACover::CoverCommand cmd, HACover* sender) {
       delay(100);
       infrared_state = digitalRead(infrared_input_gpio);
     }
-    delay(28 * 1000);
+    delay(27 * 1000);
     digitalWrite(motor_direction_1_gpio, LOW);
     sender->setState(HACover::StateClosed);
   } else if (cmd == HACover::CommandOpen) {
@@ -128,7 +128,7 @@ void setup() {
   
   cover.setName("Blinds");
   cover.onCommand(onCoverCommand);
-  cover.setCurrentState(CoverState.StateOpened);
+  cover.setCurrentState(HACover::StateClosed);
   
   mqtt.begin("pi3.local", 1883, "leon_blinds", "uv*dce3u,gaXP8msK2/#}Pt6D]+tFghq2Zx=3bUN42qBje)7^4J");
 }
