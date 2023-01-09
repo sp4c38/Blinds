@@ -1,0 +1,12 @@
+{
+  "actions" : {
+    "build" : {
+      "enabled" : true,
+      "script" : "cd \/Users\/sp4c38\/computers\/Projects\/Blinds\/Software\/blinds\narduino-cli compile -b esp8266:esp8266:generic"
+    },
+    "run" : {
+      "enabled" : true,
+      "script" : "cd \/Users\/sp4c38\/computers\/Projects\/Blinds\/Software\/blinds\narduino-cli upload -b esp8266:esp8266:generic -p \/dev\/cu.usbserial-1110"
+    }
+  }
+}
