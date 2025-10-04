@@ -90,6 +90,27 @@ switch:
 
 binary_sensor:
   - platform: gpio
+    id: btn_wall
+    name: "${dev} Wall Button"
+    pin:
+      number: 12
+      mode: INPUT
+    on_press:
+      then:
+        - if:
+            condition:
+              lambda: 'return !id(is_opening) && !id(is_closing);'
+            then:
+              - if:
+                  condition:
+                    lambda: 'return id(ir_present).state;'
+                  then:
+                    - script.execute: start_open
+                  else:
+                    - script.execute: start_close
+            else:
+              - script.execute: stop_motor
+  - platform: gpio
     id: ir_raw
     internal: true
     pin:
