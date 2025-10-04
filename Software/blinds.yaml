@@ -7,7 +7,8 @@ substitutions:
   PIN_IR_PWR:      "14"
 
   dead_time_ms: "300"
-  extra_close_ms: "4500"
+  extra_close_ms: "4500" # later set to 56000ms
+  extra_open_ms:  "300"
   max_run_ms: "60000"
 
   ir_warmup_ms:   "120"     # time to let IR settle before we rely on it
@@ -143,10 +144,7 @@ binary_sensor:
             condition:
               lambda: 'return id(is_opening);'
             then:
-              - script.execute: stop_motor
-              - cover.template.publish:
-                  id: blind
-                  state: OPEN
+              - script.execute: after_detect_open
 
   - platform: template
     id: ir_present
@@ -209,6 +207,7 @@ script:
     mode: restart
     then:
       - script.stop: after_detect_close
+      - script.stop: after_detect_open
       - script.stop: watchdog
       - lambda: |-
           id(is_opening) = true;
@@ -224,6 +223,7 @@ script:
     mode: restart
     then:
       - script.stop: after_detect_close
+      - script.stop: after_detect_open
       - script.stop: watchdog
       - lambda: |-
           id(is_opening) = false;
@@ -234,11 +234,24 @@ script:
       - switch.turn_on: relay_down
       - switch.turn_on: relay_power
       - script.execute: watchdog
+      - delay: 30ms
+      - lambda: |-
+          if (id(ir_present).state || id(ir_raw).state) {
+            id(after_detect_close).execute();
+          }
+
+  - id: after_detect_open
+    mode: restart
+    then:
+      - delay: ${extra_open_ms}ms
       - if:
           condition:
-            binary_sensor.is_on: ir_present
+            lambda: 'return id(is_opening);'
           then:
-            - script.execute: after_detect_close
+            - script.execute: stop_motor
+            - cover.template.publish:
+                id: blind
+                state: OPEN
 
   - id: after_detect_close
     mode: restart
@@ -248,6 +261,12 @@ script:
           condition:
             lambda: 'return id(is_closing);'
           then:
+            - lambda: |-
+                id(ir_last_state) = true;
+                id(ir_present).publish_state(true);
+            - cover.template.publish:
+                id: blind
+                state: CLOSED
             - script.execute: stop_motor
 
 # ------------------ HA cover ------------------
