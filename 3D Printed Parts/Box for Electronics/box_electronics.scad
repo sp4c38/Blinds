@@ -6,7 +6,7 @@ HEIGHT = 85 +2*0.3;
 DEPTH = 37  +0.2;
 
 BASE_BOTTOM_WALL_DEPTH = 1.4;
-LID_DEPTH = 1.4;
+LID_DEPTH = 3;
 LID_BORDER_WIDTH=2;
 LID_BORDER_DEPTH=5;
 
@@ -52,7 +52,7 @@ module base() {
 	}
 }
 
-module lid(border_tolerance=0.18) {
+module lid(border_tolerance=0.13) {
 	translate([0, 0, LID_BORDER_DEPTH])
 		base_outside(depth=LID_DEPTH);
 
@@ -111,9 +111,10 @@ module power_supply_holes(main_right_padding=25.5+5.56, main_bottom_padding=8.7,
 	main_x_position = -main_right_padding-main_diameter/2;
 	
 	translate([WIDTH+BASE_WALL_WIDTH, BASE_WALL_WIDTH, 0]) {
+		// Added +20 to the tolerance_top in Oct/2025 because I'm reprinting this project. The +20 allows to easily insert wires without needing to resolder them (which would be needed to be able to put it through some closed cutout).
 		translate([main_x_position, 0.01, BASE_BOTTOM_WALL_DEPTH+main_bottom_padding+main_diameter/2])
 		rotate([90, 0, 0])
-			tolerance_hole_circle(diameter=main_diameter, depth=BASE_WALL_WIDTH+0.02, tolerance_left=2, tolerance_right=2, tolerance_top=2, tolerance_bottom=2);
+			tolerance_hole_circle(diameter=main_diameter, depth=BASE_WALL_WIDTH+0.02, tolerance_left=2, tolerance_right=2, tolerance_top=2+20, tolerance_bottom=2);
 		
 		mcu_z_position = BASE_BOTTOM_WALL_DEPTH+mcu_padding_bottom+mcu_height/2;
 		mcu_tolerance_top = 2;
@@ -164,17 +165,17 @@ module ventilation(padding_right=3, padding_bottom=2) {
 		ventilation_slots(no=no, depth=BASE_WALL_WIDTH+0.02, circle_diameter=circle_diameter, extra_length=extra_length, spacing=spacing);
 }
 
-// difference() {
-// 	base();
-// 	color("red")
-// 		button_hole();
-// 	color("orange")
-// 		power_supply_holes();
-// 	color("lightblue")
-// 		ventilation();
-// }
+difference() {
+	base();
+	color("red")
+		button_hole();
+	color("orange")
+		power_supply_holes();
+	color("lightblue")
+		ventilation();
+}
 
-// translate([2*(WIDTH+2*BASE_WALL_WIDTH)+8, 0, LID_DEPTH+LID_BORDER_DEPTH])
+translate([2*(WIDTH+2*BASE_WALL_WIDTH)+8, 0, LID_DEPTH+LID_BORDER_DEPTH])
 rotate([0, 180, 0])
 translate([0, 0, 0])
 	lid();
