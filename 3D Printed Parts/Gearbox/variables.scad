@@ -1,14 +1,14 @@
 use <gearbox_parts.scad>
 
 $fa = 1;
-$fs = 2;
+$fs = 0.1;
 
 // VIEW MODIFIERS
 ground_all = false;
 3d_printing_optimized = false;
 
 show_motor = false;
-show_motor_mount = true;
+show_motor_mount = false;
 	show_motor_mount_spacer = true;
 show_motor_gear = false;
 
@@ -17,15 +17,15 @@ show_carrier = false;
 
 show_ring_gear_case = false;
 	show_ring_gear_case_spacer = true;
-	show_ring_gear_case_cover = false;
-show_ring_gear = false;
+	show_ring_gear_case_cover = true;
+show_ring_gear = true;
 
 // GENERAL VARIABLES
 number_stages = 1;
 
 // General tolerance values. These aren't always used, as other tolerances are sometimes needed in other situations.
-XY_TOLERANCE = 0.2;
-Z_TOLERANCE = 0.25;
+XY_TOLERANCE = 0.15;
+Z_TOLERANCE = 0.15;
 
 // MOTOR VARIABLES
 MOTOR_DIAMETER = 42;
@@ -65,12 +65,12 @@ PLANET_GEAR_HEIGHT = MOTOR_GEAR_HEIGHT;
 d_p = PLANET_GEAR_MODULE * PLANET_GEAR_TEETH;
 c_p =  (PLANET_GEAR_TEETH < 3)? 0 : PLANET_GEAR_MODULE / 6;
 PLANET_GEAR_BASE_DIAMETER = d_p - 2 * (PLANET_GEAR_MODULE + c_p);
-PLANET_GEAR_HOLE_DIAMETER = 6.9+2*0.3;
+PLANET_GEAR_HOLE_DIAMETER = 6.9+2*0.15;
 PLANET_CENTER_OFFSET = (3d_printing_optimized && !show_carrier) ? 14 : ((MOTOR_GEAR_MODULE*MOTOR_GEAR_TEETH)/2+(PLANET_GEAR_MODULE*PLANET_GEAR_TEETH)/2+PLANET_GEAR_TOOTH_TOLERANCE);
 echo("Planet gear base diameter: ", PLANET_GEAR_BASE_DIAMETER);
 
 // GEAR CARRIER VARIABLES
-CARRIER_THIN_BAR_DIAMETER = PLANET_GEAR_HOLE_DIAMETER-2*0.3;
+CARRIER_THIN_BAR_DIAMETER = PLANET_GEAR_HOLE_DIAMETER-2*0.15;
 CARRIER_THICK_BAR_DIAMETER = PLANET_GEAR_HOLE_DIAMETER+2;
 CARRIER_THICK_BAR_HEIGHT = 2;
 CARRIER_BASE_HEIGHT = 2;

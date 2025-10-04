@@ -1,0 +1,52 @@
+#-----------------------------------------------------------------------------
+# macOS
+#-----------------------------------------------------------------------------
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+.Spotlight-V100
+.Trashes
+Icon?
+ehthumbs.db
+Thumbs.db
+
+#-----------------------------------------------------------------------------
+# C++ / Arduino Build Artifacts
+#-----------------------------------------------------------------------------
+# Object files
+*.o
+*.a
+*.so
+
+# Precompiled Headers
+*.gch
+
+# Compiled output
+*.bin
+*.hex
+*.elf
+*.eep
+
+# Dependency files
+*.d
+
+# Build directories (common for Arduino IDE, PlatformIO, etc.)
+build/
+.build/
+.pio/
+
+#-----------------------------------------------------------------------------
+# IDE & Editor Specific
+#-----------------------------------------------------------------------------
+# VSCode
+.vscode/
+
+# CLion
+.idea/
+
+#-----------------------------------------------------------------------------
+# Other
+#-----------------------------------------------------------------------------
+# Local configuration files that should not be in the repo
+*.local
