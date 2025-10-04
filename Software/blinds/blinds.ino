@@ -44,34 +44,48 @@ void onSensorSwitchCommand(bool state, HASwitch* sender) {
   sender->setState(state);
 }
 
+void openBlinds() {
+  digitalWrite(motor_direction_2_gpio, LOW);
+  int infrared_state = digitalRead(infrared_input_gpio);
+  int delay_amount = 100;
+  int time_elapsed = 0;
+  while (infrared_state == LOW) {
+    delay(delay_amount);
+    time_elapsed += delay_amount;
+    if (time_elapsed >= (35 * 1000)) {
+      break;
+    }
+    infrared_state = digitalRead(infrared_input_gpio);
+  }
+  delay(1 * 10);
+  digitalWrite(motor_direction_2_gpio, HIGH);
+}
+
+void closeBlinds() {
+  digitalWrite(motor_direction_1_gpio, HIGH);
+  int infrared_state = digitalRead(infrared_input_gpio);
+  while (infrared_state == HIGH) {
+    delay(100);
+    infrared_state = digitalRead(infrared_input_gpio);
+  }
+  delay(27 * 1000);
+  digitalWrite(motor_direction_1_gpio, LOW);
+}
+
 void onCoverCommand(HACover::CoverCommand cmd, HACover* sender) {
   digitalWrite(infrared_on_off_gpio, HIGH);
   delay(200);
   if (cmd == HACover::CommandClose) {
     Serial.println("Closing blinds.");
     sender->setState(HACover::StateClosing);
-    
-    digitalWrite(motor_direction_1_gpio, HIGH);
-    int infrared_state = digitalRead(infrared_input_gpio);
-    while (infrared_state == HIGH) {
-      delay(100);
-      infrared_state = digitalRead(infrared_input_gpio);
-    }
-    delay(27 * 1000);
-    digitalWrite(motor_direction_1_gpio, LOW);
+    openBlinds();
+    closeBlinds();    
     sender->setState(HACover::StateClosed);
+    
   } else if (cmd == HACover::CommandOpen) {
     Serial.println("Opening blinds.");
     sender->setState(HACover::StateOpening);
-    
-    digitalWrite(motor_direction_2_gpio, LOW);
-    int infrared_state = digitalRead(infrared_input_gpio);
-    while (infrared_state == LOW) {
-      delay(100);
-      infrared_state = digitalRead(infrared_input_gpio);
-    }
-    delay(1 * 10);
-    digitalWrite(motor_direction_2_gpio, HIGH);
+    openBlinds();
     sender->setState(HACover::StateOpen);
   }
   digitalWrite(infrared_on_off_gpio, LOW);
