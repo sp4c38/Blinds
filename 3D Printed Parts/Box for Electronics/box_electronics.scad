@@ -52,7 +52,7 @@ module base() {
 	}
 }
 
-module lid(border_tolerance=0.13) {
+module lid(border_tolerance=0.05) {
 	translate([0, 0, LID_BORDER_DEPTH])
 		base_outside(depth=LID_DEPTH);
 
@@ -165,15 +165,15 @@ module ventilation(padding_right=3, padding_bottom=2) {
 		ventilation_slots(no=no, depth=BASE_WALL_WIDTH+0.02, circle_diameter=circle_diameter, extra_length=extra_length, spacing=spacing);
 }
 
-difference() {
-	base();
-	color("red")
-		button_hole();
-	color("orange")
-		power_supply_holes();
-	color("lightblue")
-		ventilation();
-}
+//difference() {
+//	base();
+//	color("red")
+//		button_hole();
+//	color("orange")
+//		power_supply_holes();
+//	color("lightblue")
+//		ventilation();
+//}
 
 translate([2*(WIDTH+2*BASE_WALL_WIDTH)+8, 0, LID_DEPTH+LID_BORDER_DEPTH])
 rotate([0, 180, 0])
