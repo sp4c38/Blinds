@@ -1,7 +1,7 @@
 $fa = 0.1;
 $fs = 0.1;
 
-sensor_width = 49.5+0.5;
+sensor_width = 49.5+0.5+10;
 sensor_height = 14.3+0.5;
 sensor_depth = 8.5+0.5;
 min_border_width = 1.5;
@@ -29,19 +29,22 @@ module sensor_case() {
 upper_shape_width = sensor_case_width * sin(rise_degrees);
 upper_shape_height = sensor_case_width * cos(rise_degrees);
 
-color("green")
-translate([0, sensor_case_height, 0])
-rotate([90, 0, 0])
-linear_extrude(sensor_case_height)
-	polygon([[0, -0.01], [upper_shape_width+0.01, upper_shape_height], [0, upper_shape_height]]);
+// color("green")
+// translate([0, sensor_case_height, 0])
+// rotate([90, 0, 0])
+// linear_extrude(sensor_case_height)
+// 	polygon([[0, -0.01], [upper_shape_width+0.01, upper_shape_height], [0, upper_shape_height]]);
 
 lower_shape_width = sensor_case_depth * sin(90-rise_degrees);
 lower_shape_height = sensor_case_depth * cos(90-rise_degrees);
 
-color("green")
-translate([0, sensor_case_height, 0])
-rotate([90, 0, 0])
-linear_extrude(sensor_case_height)
-	polygon([[0, 0.01], [0, -lower_shape_height], [lower_shape_width+0.01, -lower_shape_height]]);
+// color("green")
+// translate([0, sensor_case_height, 0])
+// rotate([90, 0, 0])
+// linear_extrude(sensor_case_height)
+// 	polygon([[0, 0.01], [0, -lower_shape_height], [lower_shape_width+0.01, -lower_shape_height]]);
 
 sensor_case();
+
+translate([-5, 0, -lower_shape_height])
+	cube([5, sensor_case_height, lower_shape_height+upper_shape_height+65]);
