@@ -7,8 +7,8 @@ substitutions:
   PIN_IR_PWR:      "14"
 
   dead_time_ms: "300"
-  extra_close_ms: "4500" # later set to 56000ms
-  extra_open_ms:  "300"
+  extra_close_ms: "20500"
+  extra_open_ms:  "50"
   max_run_ms: "60000"
 
   ir_warmup_ms:   "120"     # time to let IR settle before we rely on it
@@ -16,13 +16,10 @@ substitutions:
 
 esphome:
   name: blinds-leon
-
   on_boot:
-    # ensure IR LED is off, then evaluate current position
-    priority: -100
+    priority: -10
     then:
-      - switch.turn_off: ir_led
-      - script.execute: boot_open_if_needed
+      - script.execute: after_boot
 
 esp8266:
   board: esp12e
@@ -61,6 +58,18 @@ button:
   - platform: restart
     id: restart_device
     name: "${dev} Restart"
+  - platform: template
+    id: nudge_open_button
+    name: "${dev} Nudge Open"
+    on_press:
+      then:
+        - script.execute: nudge_open
+  - platform: template
+    id: nudge_close_button
+    name: "${dev} Nudge Close"
+    on_press:
+      then:
+        - script.execute: nudge_close
 
 switch:
   - platform: gpio
@@ -172,6 +181,12 @@ globals:
     initial_value: "false"
 
 script:
+  - id: after_boot
+    mode: restart
+    then:
+      - delay: 1s
+      - switch.turn_off: ir_led
+      - script.execute: boot_open_if_needed
   - id: boot_open_if_needed
     mode: restart
     then:
@@ -190,6 +205,29 @@ script:
             lambda: 'return !id(ir_last_state);'
           then:
             - switch.turn_off: ir_led
+  - id: nudge_open
+    mode: restart
+    then:
+      - if:
+          condition:
+            lambda: 'return id(is_opening) || id(is_closing);'
+          then:
+            - script.execute: stop_motor
+      - script.execute: start_open
+      - delay: 1s
+      - script.execute: stop_motor
+
+  - id: nudge_close
+    mode: restart
+    then:
+      - if:
+          condition:
+            lambda: 'return id(is_opening) || id(is_closing);'
+          then:
+            - script.execute: stop_motor
+      - script.execute: start_close
+      - delay: 1s
+      - script.execute: stop_motor
   # Power IR briefly before motion and arm a failsafe auto-off
   - id: ir_power_on
     mode: restart
