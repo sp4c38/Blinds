@@ -1,7 +1,7 @@
 substitutions:
   dev: "Leon Blinds"
-  PIN_RELAY_UP:    "4"    # GPIO4
-  PIN_RELAY_DOWN:  "0"    # GPIO0 (boot strap pin)
+  PIN_RELAY_DPDT_A: "4"    # GPIO4
+  PIN_RELAY_DPDT_B: "0"    # GPIO0 (boot strap pin)
   PIN_RELAY_POWER: "5"    # GPIO5
   PIN_IR:          "13"
   PIN_IR_PWR:      "14"
@@ -18,13 +18,11 @@ esphome:
   name: blinds-leon
 
   on_boot:
-    # make sure the IR LED is OFF after boot
+    # ensure IR LED is off, then evaluate current position
     priority: -100
     then:
       - switch.turn_off: ir_led
-      - binary_sensor.template.publish:
-          id: ir_present
-          state: OFF
+      - script.execute: boot_open_if_needed
 
 esp8266:
   board: esp12e
@@ -59,6 +57,11 @@ web_server: # Enable the optional web server
     username: !secret web_user
     password: !secret web_pass
 
+button:
+  - platform: restart
+    id: restart_device
+    name: "${dev} Restart"
+
 switch:
   - platform: gpio
     id: relay_power
@@ -67,20 +70,20 @@ switch:
     restore_mode: ALWAYS_OFF
 
   - platform: gpio
-    id: relay_up
-    name: "${dev} Dir UP"
-    pin: ${PIN_RELAY_UP}
+    id: relay_dpdt_a
+    name: "${dev} DPDT A"
+    pin: ${PIN_RELAY_DPDT_A}
     restore_mode: ALWAYS_OFF
-    interlock: [relay_down]
-    interlock_wait_time: ${dead_time_ms}ms
+    # interlock: [relay_dpdt_b]
+    # interlock_wait_time: ${dead_time_ms}ms
 
   - platform: gpio
-    id: relay_down
-    name: "${dev} Dir DOWN"
-    pin: ${PIN_RELAY_DOWN}
+    id: relay_dpdt_b
+    name: "${dev} DPDT B"
+    pin: ${PIN_RELAY_DPDT_B}
     restore_mode: ALWAYS_OFF
-    interlock: [relay_up]
-    interlock_wait_time: ${dead_time_ms}ms
+    # interlock: [relay_dpdt_a]
+    # interlock_wait_time: ${dead_time_ms}ms
 
   # IR LED power
   - platform: gpio
@@ -98,6 +101,7 @@ binary_sensor:
       mode: INPUT
     on_press:
       then:
+        - script.execute: btn_long_press
         - if:
             condition:
               lambda: 'return !id(is_opening) && !id(is_closing);'
@@ -111,6 +115,9 @@ binary_sensor:
                     - script.execute: start_close
             else:
               - script.execute: stop_motor
+    on_release:
+      then:
+        - script.stop: btn_long_press
   - platform: gpio
     id: ir_raw
     internal: true
@@ -165,6 +172,24 @@ globals:
     initial_value: "false"
 
 script:
+  - id: boot_open_if_needed
+    mode: restart
+    then:
+      - delay: 300ms
+      - switch.turn_on: ir_led
+      - delay: ${ir_warmup_ms}ms
+      - lambda: |-
+          const bool raw = id(ir_raw).state;
+          id(ir_last_state) = raw;
+          id(ir_present).publish_state(raw);
+          if (raw) {
+            id(start_open).execute();
+          }
+      - if:
+          condition:
+            lambda: 'return !id(ir_last_state);'
+          then:
+            - switch.turn_off: ir_led
   # Power IR briefly before motion and arm a failsafe auto-off
   - id: ir_power_on
     mode: restart
@@ -199,13 +224,14 @@ script:
       - script.stop: watchdog
       - switch.turn_off: relay_power
       - delay: ${dead_time_ms}ms
-      - switch.turn_off: relay_up
-      - switch.turn_off: relay_down
+      - switch.turn_off: relay_dpdt_a
+      - switch.turn_off: relay_dpdt_b
       - switch.turn_off: ir_led       # ensure IR is OFF when idle
 
   - id: start_open
     mode: restart
     then:
+      - script.stop: boot_open_if_needed
       - script.stop: after_detect_close
       - script.stop: after_detect_open
       - script.stop: watchdog
@@ -213,15 +239,17 @@ script:
           id(is_opening) = true;
           id(is_closing) = false;
       - script.execute: ir_power_on
-      - switch.turn_off: relay_down
+      - switch.turn_off: relay_power
       - delay: ${dead_time_ms}ms
-      - switch.turn_on: relay_up
+      - switch.turn_off: relay_dpdt_a
+      - switch.turn_off: relay_dpdt_b
       - switch.turn_on: relay_power
       - script.execute: watchdog
 
   - id: start_close
     mode: restart
     then:
+      - script.stop: boot_open_if_needed
       - script.stop: after_detect_close
       - script.stop: after_detect_open
       - script.stop: watchdog
@@ -229,9 +257,10 @@ script:
           id(is_opening) = false;
           id(is_closing) = true;
       - script.execute: ir_power_on
-      - switch.turn_off: relay_up
+      - switch.turn_off: relay_power
       - delay: ${dead_time_ms}ms
-      - switch.turn_on: relay_down
+      - switch.turn_on: relay_dpdt_a
+      - switch.turn_on: relay_dpdt_b
       - switch.turn_on: relay_power
       - script.execute: watchdog
       - delay: 30ms
@@ -252,6 +281,17 @@ script:
             - cover.template.publish:
                 id: blind
                 state: OPEN
+
+  - id: btn_long_press
+    mode: restart
+    then:
+      - delay: 4s
+      - if:
+          condition:
+            lambda: 'return id(btn_wall).state;'
+          then:
+            - logger.log: "Wall button long press - restarting"
+            - button.press: restart_device
 
   - id: after_detect_close
     mode: restart
