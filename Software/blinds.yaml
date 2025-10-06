@@ -7,7 +7,7 @@ substitutions:
   PIN_IR_PWR:      "14"
 
   dead_time_ms: "300"
-  extra_close_ms: "20500"
+  extra_close_ms: "20700"
   extra_open_ms:  "50"
   max_run_ms: "60000"
 
